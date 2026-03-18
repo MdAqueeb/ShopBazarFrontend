@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"import\\\\|export\\\\|from\\\\|require\" /Users/mohammedafaaq/Desktop/projects/shopbazar-frontend/src --include=*.tsx --include=*.ts --include=*.jsx --include=*.js)",
+      "Bash(xargs ls:*)",
+      "Bash(find /Users/mohammedafaaq/Desktop/projects/shopbazar-frontend -not -path */node_modules/* -type f)",
+      "Bash(curl -s http://localhost:8080/v3/api-docs)",
+      "Bash(curl -s http://localhost:8080/v2/api-docs)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss:*)"
+    ]
+  }
+}
