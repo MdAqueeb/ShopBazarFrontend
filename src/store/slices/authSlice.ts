@@ -35,6 +35,7 @@ export const login = createAsyncThunk(
   async (data: LoginRequest, { rejectWithValue }) => {
     try {
       const res = await authApi.login(data);
+      console.log(res.data.data);
       return res.data.data;
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
@@ -95,6 +96,9 @@ const authSlice = createSlice({
         state.accessToken = auth.accessToken;
         storage.setAccessToken(auth.accessToken);
         storage.setRefreshToken(auth.refreshToken);
+        console.log(auth);
+        state.user = auth.user; 
+
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;

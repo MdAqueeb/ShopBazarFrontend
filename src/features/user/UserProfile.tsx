@@ -31,7 +31,7 @@ const ROLE_COLORS: Record<string, string> = {
 export default function UserProfile({ userId }: UserProfileProps) {
   const dispatch = useAppDispatch();
   const { profile, loading, error } = useAppSelector((state) => state.user);
-
+  console.log(profile, "profile")
   const {
     register,
     handleSubmit,
