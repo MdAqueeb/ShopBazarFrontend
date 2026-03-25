@@ -9,18 +9,18 @@ import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 
 // Public pages
-import HomePage from "../pages/HomePage";
 import CategoryPage from "../pages/CategoryPage";
-import ProductListPage from "../pages/product/ProductListPage";
+import HomePage from "../pages/HomePage";
 import ProductDetailPage from "../pages/product/ProductDetailPage";
+import ProductListPage from "../pages/product/ProductListPage";
 
 // Protected pages
-import ProfilePage from "../pages/user/ProfilePage";
 import CartPage from "../pages/cart/CartPage";
 import CheckoutPage from "../pages/CheckoutPage";
-import OrderListPage from "../pages/order/OrderListPage";
 import OrderDetailPage from "../pages/order/OrderDetailPage";
+import OrderListPage from "../pages/order/OrderListPage";
 import OrderSuccessPage from "../pages/order/OrderSuccessPage";
+import ProfilePage from "../pages/user/ProfilePage";
 import WishlistPage from "../pages/WishlistPage";
 
 // Misc
@@ -41,6 +41,7 @@ const router = createBrowserRouter([
   // ── App routes (uses AppLayout with Navbar) ────────────────────────────────
   {
     element: <AppLayout />,
+    // element: <ProtectedRoute />,
     children: [
       // Public browsing routes
       { path: "/", element: <HomePage /> },
