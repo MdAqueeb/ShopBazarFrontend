@@ -1,19 +1,41 @@
 import axiosInstance from './axiosInstance';
-import type { ApiResponse } from '../types/api.types';
-import type { User, UpdateUserRequest } from '../types/user.types';
+import type { ApiResponse, PageResponse } from '../types/product';
+import type { User, UpdateUserRequest, UserStatus } from '../types/user';
+
+const API = 'http://localhost:8080/api/users';
 
 export const userApi = {
-  getUser: (userId: number) =>
-    axiosInstance.get<ApiResponse<User>>(`/api/users/${userId}`),
+  getUserProfile: async (userId: number) => {
+    const res = await axiosInstance.get<ApiResponse<User>>(`${API}/${userId}`);
+    return res.data;
+  },
 
-  updateUser: (userId: number, data: UpdateUserRequest) =>
-    axiosInstance.put<ApiResponse<User>>(`/api/users/${userId}`, data),
+  updateUserProfile: async (userId: number, data: UpdateUserRequest) => {
+    const res = await axiosInstance.put<ApiResponse<User>>(`${API}/${userId}`, data);
+    return res.data;
+  },
 
-  deleteUser: (userId: number) =>
-    axiosInstance.delete<ApiResponse<void>>(`/api/users/${userId}`),
+  deleteUserProfile: async (userId: number) => {
+    const res = await axiosInstance.delete<ApiResponse<void>>(`${API}/${userId}`);
+    return res.data;
+  },
 
-  updateUserRole: (userId: number, roleId: number) =>
-    axiosInstance.put<ApiResponse<User>>(`/api/users/${userId}/role`, null, {
-      params: { roleId },
-    }),
+  getAllUsers: async (params: { page?: number; size?: number }) => {
+    const res = await axiosInstance.get<ApiResponse<PageResponse<User>>>(API, { params });
+    return res.data;
+  },
+
+  updateUserStatus: async (userId: number, status: UserStatus) => {
+    const res = await axiosInstance.patch<ApiResponse<User>>(`${API}/${userId}/status`, null, {
+      params: { status }
+    });
+    return res.data;
+  },
+
+  updateUserRole: async (userId: number, roleId: number) => {
+    const res = await axiosInstance.put<ApiResponse<User>>(`${API}/${userId}/role`, null, {
+      params: { roleId }
+    });
+    return res.data;
+  }
 };

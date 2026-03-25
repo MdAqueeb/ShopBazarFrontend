@@ -1,5 +1,3 @@
-// types/product.ts
-
 export interface ProductResponse {
   productId: number;
   name: string;
@@ -7,25 +5,47 @@ export interface ProductResponse {
   price: number;
   stockQuantity: number;
   categoryName: string;
-  sellerName: string;
+  sellerName?: string;
   sellerId: number;
+  categoryId?: number;
   status: string;
+  blockReason?: string;
+  createdAt?: string;
   imageUrls: string[];
-
   rating: number;
   reviewCount: number;
 }
 
-// pagination wrapper
+export interface CreateProductRequest {
+  sellerId: number;
+  name: string;
+  description: string;
+  price: number;
+  categoryId: number;
+  status: string;
+}
+
+export interface UpdateProductRequest {
+  name: string;
+  description: string;
+  price: number;
+}
+
+export interface ProductImageResponse {
+  imageId: number;
+  imageUrl: string;
+  productId: number;
+}
+
 export interface PageResponse<T> {
   content: T[];
   totalPages: number;
   totalElements: number;
-  number: number;
   size: number;
+  number: number;
+  page?: number;
 }
 
-// api wrapper
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
