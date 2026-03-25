@@ -13,6 +13,11 @@ import {
   Share2,
   ChevronRight,
 } from 'lucide-react';
+import { toast } from 'react-toastify';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { addToCart } from '../../store/slices/cartSlice';
+import { addToWishlist, removeFromWishlist, selectIsWishlisted } from '../../store/slices/wishlistSlice';
+import { requireAuth } from '../../utils/authGuard';
 
 interface ProductData {
   id: number;
@@ -64,12 +69,61 @@ function StarRating({ rating, large = false }: { rating: number; large?: boolean
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { user, accessToken } = useAppSelector((state) => state.auth);
+  const isLoggedIn = !!accessToken;
   const product = (id && PRODUCT_MAP[id]) ? PRODUCT_MAP[id] : FALLBACK;
+  const wishlisted = useAppSelector(selectIsWishlisted(product.id));
 
   const [qty, setQty]         = useState(1);
-  const [wishlisted, setWish] = useState(false);
   const [selectedColor, setColor]   = useState(0);
   const [selectedSize, setSize]     = useState(0);
+
+  const handleWishlistToggle = () => {
+    if (!requireAuth(isLoggedIn, navigate, 'Please login to add to wishlist')) return;
+    if (wishlisted) {
+      dispatch(removeFromWishlist(product.id));
+      toast.info(`${product.name} removed from wishlist`);
+    } else {
+      // Convert detail product to a ProductResponse-compatible shape for the wishlist slice
+      dispatch(addToWishlist({
+        productId: product.id,
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        stockQuantity: 0,
+        categoryName: product.category,
+        sellerId: 0,
+        status: 'ACTIVE',
+        imageUrls: [],
+        rating: product.rating,
+        reviewCount: product.reviews,
+      }));
+      toast.success(`${product.name} added to wishlist`);
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (!requireAuth(isLoggedIn, navigate, 'Please login to add items to cart')) return;
+    dispatch(
+      addToCart({
+        userId: user!.userId,
+        data: { productId: product.id, quantity: qty },
+      })
+    );
+    toast.success(`${product.name} added to cart`);
+  };
+
+  const handleBuyNow = () => {
+    if (!requireAuth(isLoggedIn, navigate, 'Please login to continue')) return;
+    dispatch(
+      addToCart({
+        userId: user!.userId,
+        data: { productId: product.id, quantity: qty },
+      })
+    );
+    navigate('/checkout');
+  };
 
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
@@ -118,7 +172,7 @@ export default function ProductDetailPage() {
             {/* Actions */}
             <div className="absolute bottom-5 right-5 flex flex-col gap-2">
               <button
-                onClick={() => setWish((w) => !w)}
+                onClick={handleWishlistToggle}
                 className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all ${
                   wishlisted ? 'bg-red-500 text-white scale-110' : 'bg-white/90 backdrop-blur text-gray-500 hover:bg-white'
                 }`}
@@ -235,13 +289,19 @@ export default function ProductDetailPage() {
               </button>
             </div>
 
-            <button className="flex-1 flex items-center justify-center gap-2.5 py-3.5 bg-violet-600 hover:bg-violet-700 active:scale-[0.98] text-white font-semibold rounded-xl transition-all shadow-lg shadow-violet-300">
+            <button
+              onClick={handleAddToCart}
+              className="flex-1 flex items-center justify-center gap-2.5 py-3.5 bg-violet-600 hover:bg-violet-700 active:scale-[0.98] text-white font-semibold rounded-xl transition-all shadow-lg shadow-violet-300"
+            >
               <ShoppingCart size={18} />
               Add to Cart — ${(product.price * qty).toFixed(2)}
             </button>
           </div>
 
-          <button className="mt-3 w-full py-3.5 border-2 border-violet-600 text-violet-600 hover:bg-violet-50 font-semibold rounded-xl transition-colors">
+          <button
+            onClick={handleBuyNow}
+            className="mt-3 w-full py-3.5 border-2 border-violet-600 text-violet-600 hover:bg-violet-50 font-semibold rounded-xl transition-colors"
+          >
             Buy Now
           </button>
         </div>

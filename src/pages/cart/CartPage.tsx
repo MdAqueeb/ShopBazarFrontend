@@ -200,7 +200,10 @@ export default function CartPage() {
               <span>${total.toFixed(2)}</span>
             </div>
 
-            <button className="w-full flex items-center justify-center gap-2 py-3.5 bg-violet-600 hover:bg-violet-700 active:scale-[0.98] text-white font-bold rounded-xl transition-all shadow-lg shadow-violet-200">
+            <button
+              onClick={() => navigate('/checkout')}
+              className="w-full flex items-center justify-center gap-2 py-3.5 bg-violet-600 hover:bg-violet-700 active:scale-[0.98] text-white font-bold rounded-xl transition-all shadow-lg shadow-violet-200"
+            >
               Proceed to Checkout
               <ChevronRight size={16} />
             </button>

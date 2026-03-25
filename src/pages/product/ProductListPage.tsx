@@ -295,9 +295,8 @@ import {
   Tag,
 } from 'lucide-react';
 
-import { useDispatch, useSelector } from "react-redux";
-import { getProducts } from "../../store/slices/productSlice";
-import type { RootState, AppDispatch } from "../../store/store";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { fetchAllProducts } from "../../store/slices/productSlice";
 
 interface UIProduct {
   id: number;
@@ -348,17 +347,18 @@ export default function ProductListPage() {
   const [wishlist, setWishlist] = useState<number[]>([]);
   const navigate = useNavigate();
 
-  const dispatch = useDispatch<AppDispatch>();
-  const { products, loading, error } = useSelector(
-    (state: RootState) => state.products
+  const dispatch = useAppDispatch();
+  const { products, loading, error } = useAppSelector(
+    (state) => state.products
   );
 
   useEffect(() => {
-    dispatch(getProducts());
+    dispatch(fetchAllProducts({}));
   }, [dispatch]);
 
-  // 🔥 Backend → UI mapping
-  const mappedProducts: UIProduct[] = products.map((p) => ({
+  // Backend → UI mapping
+  const productList = products?.content ?? [];
+  const mappedProducts: UIProduct[] = productList.map((p) => ({
     id: p.productId,
     name: p.name,
     category: p.categoryName,

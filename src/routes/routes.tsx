@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 
 import AppLayout from "../components/layout/AppLayout";
 import AuthLayout from "../components/layout/AuthLayout";
@@ -8,26 +8,27 @@ import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 
-// User pages
-import ProfilePage from "../pages/user/ProfilePage";
-
-// Product pages
-import ProductDetailPage from "../pages/product/ProductDetailPage";
+// Public pages
+import HomePage from "../pages/HomePage";
+import CategoryPage from "../pages/CategoryPage";
 import ProductListPage from "../pages/product/ProductListPage";
+import ProductDetailPage from "../pages/product/ProductDetailPage";
 
-// Cart pages
+// Protected pages
+import ProfilePage from "../pages/user/ProfilePage";
 import CartPage from "../pages/cart/CartPage";
-
-// Order pages
-import OrderDetailPage from "../pages/order/OrderDetailPage";
+import CheckoutPage from "../pages/CheckoutPage";
 import OrderListPage from "../pages/order/OrderListPage";
+import OrderDetailPage from "../pages/order/OrderDetailPage";
+import OrderSuccessPage from "../pages/order/OrderSuccessPage";
+import WishlistPage from "../pages/WishlistPage";
 
 // Misc
 import NotFoundPage from "../pages/NotFoundPage";
 import ProtectedRoute from "./ProtectedRoute";
 
 const router = createBrowserRouter([
-  // ── Public auth routes ───────────────────────────────────────────────────────
+  // ── Auth routes (public, uses AuthLayout) ──────────────────────────────────
   {
     element: <AuthLayout />,
     children: [
@@ -37,27 +38,25 @@ const router = createBrowserRouter([
     ],
   },
 
-  // ── Protected app routes ─────────────────────────────────────────────────────
+  // ── App routes (uses AppLayout with Navbar) ────────────────────────────────
   {
-    element: <ProtectedRoute />,
+    element: <AppLayout />,
     children: [
+      // Public browsing routes
+      { path: "/", element: <HomePage /> },
+      { path: "/products", element: <ProductListPage /> },
+      { path: "/products/:id", element: <ProductDetailPage /> },
+      { path: "/category/:id", element: <CategoryPage /> },
+
+      // Protected routes (require auth)
       {
-        element: <AppLayout />,
+        element: <ProtectedRoute />,
         children: [
-          // Root redirect
-          { index: true, element: <Navigate to="/products" replace /> },
-
-          // User
           { path: "/profile", element: <ProfilePage /> },
-
-          // Product
-          { path: "/products", element: <ProductListPage /> },
-          { path: "/products/:id", element: <ProductDetailPage /> },
-
-          // Cart
+          { path: "/wishlist", element: <WishlistPage /> },
           { path: "/cart", element: <CartPage /> },
-
-          // Orders + order items
+          { path: "/checkout", element: <CheckoutPage /> },
+          { path: "/order-success", element: <OrderSuccessPage /> },
           { path: "/orders", element: <OrderListPage /> },
           { path: "/orders/:id", element: <OrderDetailPage /> },
         ],
@@ -65,7 +64,7 @@ const router = createBrowserRouter([
     ],
   },
 
-  // ── Catch-all ─────────────────────────────────────────────────────────────────
+  // ── Catch-all ──────────────────────────────────────────────────────────────
   { path: "*", element: <NotFoundPage /> },
 ]);
 

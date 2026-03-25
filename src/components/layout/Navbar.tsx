@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { logout } from '../../store/slices/authSlice';
+import { selectWishlistCount } from '../../store/slices/wishlistSlice';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -22,8 +23,10 @@ export default function Navbar() {
   const userMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  const { user } = useAppSelector((state) => state.auth);
+  const { user, accessToken } = useAppSelector((state) => state.auth);
+  const wishlistCount = useAppSelector(selectWishlistCount);
   const dispatch = useAppDispatch();
+  const isLoggedIn = !!accessToken;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -53,7 +56,7 @@ export default function Navbar() {
         <div className="flex items-center h-16 gap-4">
 
           {/* Logo */}
-          <Link to="/products" className="flex items-center gap-2.5 shrink-0 group">
+          <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
             <div className="w-9 h-9 bg-violet-600 group-hover:bg-violet-700 rounded-xl flex items-center justify-center shadow-sm transition-colors">
               <ShoppingBag size={18} className="text-white" />
             </div>
@@ -86,87 +89,115 @@ export default function Navbar() {
               <Search size={20} />
             </button>
 
-            {/* Wishlist */}
-            <button className="relative p-2 text-gray-500 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors hidden sm:flex items-center">
-              <Heart size={20} />
-            </button>
+            {isLoggedIn ? (
+              <>
+                {/* Wishlist */}
+                <Link
+                  to="/wishlist"
+                  className="relative p-2 text-gray-500 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors hidden sm:flex items-center"
+                >
+                  <Heart size={20} />
+                  {wishlistCount > 0 && (
+                    <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                      {wishlistCount > 9 ? '9+' : wishlistCount}
+                    </span>
+                  )}
+                </Link>
 
-            {/* Cart */}
-            <Link
-              to="/cart"
-              className="relative p-2 text-gray-500 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-colors"
-            >
-              <ShoppingCart size={20} />
-              <span className="absolute top-1 right-1 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
-                0
-              </span>
-            </Link>
+                {/* Cart */}
+                <Link
+                  to="/cart"
+                  className="relative p-2 text-gray-500 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-colors"
+                >
+                  <ShoppingCart size={20} />
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                    0
+                  </span>
+                </Link>
 
-            {/* User menu — desktop */}
-            <div className="relative hidden sm:block" ref={userMenuRef}>
-              <button
-                onClick={() => setUserMenuOpen((o) => !o)}
-                className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-gray-100 transition-colors"
-              >
-                <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-full flex items-center justify-center shadow-sm">
-                  <span className="text-xs font-bold text-white">{initials}</span>
-                </div>
-                <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">
-                  {user?.firstName ?? 'Account'}
-                </span>
-                <ChevronDown
-                  size={14}
-                  className={`text-gray-400 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`}
-                />
-              </button>
+                {/* User menu — desktop */}
+                <div className="relative hidden sm:block" ref={userMenuRef}>
+                  <button
+                    onClick={() => setUserMenuOpen((o) => !o)}
+                    className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-full flex items-center justify-center shadow-sm">
+                      <span className="text-xs font-bold text-white">{initials}</span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">
+                      {user?.firstName ?? 'Account'}
+                    </span>
+                    <ChevronDown
+                      size={14}
+                      className={`text-gray-400 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`}
+                    />
+                  </button>
 
-              {/* Dropdown */}
-              {userMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-60 bg-white border border-gray-100 rounded-2xl shadow-xl py-2 z-50 animate-scale-in">
-                  {user && (
-                    <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="text-sm font-semibold text-gray-900">
-                        {user.firstName} {user.lastName}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-0.5 truncate">{user.email}</p>
+                  {/* Dropdown */}
+                  {userMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-60 bg-white border border-gray-100 rounded-2xl shadow-xl py-2 z-50 animate-scale-in">
+                      {user && (
+                        <div className="px-4 py-3 border-b border-gray-100">
+                          <p className="text-sm font-semibold text-gray-900">
+                            {user.firstName} {user.lastName}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5 truncate">{user.email}</p>
+                        </div>
+                      )}
+                      <Link
+                        to="/profile"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <User size={15} className="text-gray-400" />
+                        My Profile
+                      </Link>
+                      <Link
+                        to="/orders"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <Package size={15} className="text-gray-400" />
+                        My Orders
+                      </Link>
+                      <Link
+                        to="/wishlist"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <Heart size={15} className="text-gray-400" />
+                        Wishlist
+                      </Link>
+                      <div className="border-t border-gray-100 mt-1 pt-1">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors rounded-b-2xl"
+                        >
+                          <LogOut size={15} />
+                          Sign Out
+                        </button>
+                      </div>
                     </div>
                   )}
-                  <Link
-                    to="/profile"
-                    onClick={() => setUserMenuOpen(false)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <User size={15} className="text-gray-400" />
-                    My Profile
-                  </Link>
-                  <Link
-                    to="/orders"
-                    onClick={() => setUserMenuOpen(false)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <Package size={15} className="text-gray-400" />
-                    My Orders
-                  </Link>
-                  <Link
-                    to="/cart"
-                    onClick={() => setUserMenuOpen(false)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    <Heart size={15} className="text-gray-400" />
-                    Wishlist
-                  </Link>
-                  <div className="border-t border-gray-100 mt-1 pt-1">
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors rounded-b-2xl"
-                    >
-                      <LogOut size={15} />
-                      Sign Out
-                    </button>
-                  </div>
                 </div>
-              )}
-            </div>
+              </>
+            ) : (
+              /* Login / Register buttons — shown when not logged in */
+              <div className="hidden sm:flex items-center gap-2">
+                <Link
+                  to="/login"
+                  className="px-4 py-2 text-sm font-medium text-violet-600 hover:bg-violet-50 rounded-xl transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-4 py-2 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-colors shadow-sm"
+                >
+                  Register
+                </Link>
+              </div>
+            )}
 
             {/* Mobile hamburger */}
             <button
@@ -190,46 +221,75 @@ export default function Navbar() {
               className="w-full pl-9 pr-4 py-2.5 text-sm bg-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-400 placeholder:text-gray-400"
             />
           </div>
-          {user && (
-            <div className="flex items-center gap-3 px-3 py-2 mb-1">
-              <div className="w-9 h-9 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-full flex items-center justify-center">
-                <span className="text-sm font-bold text-white">{initials}</span>
+
+          {isLoggedIn ? (
+            <>
+              {user && (
+                <div className="flex items-center gap-3 px-3 py-2 mb-1">
+                  <div className="w-9 h-9 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-bold text-white">{initials}</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">{user.firstName} {user.lastName}</p>
+                    <p className="text-xs text-gray-400">{user.email}</p>
+                  </div>
+                </div>
+              )}
+              <Link
+                to="/cart"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
+              >
+                <ShoppingCart size={16} className="text-gray-400" /> Cart
+              </Link>
+              <Link
+                to="/wishlist"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
+              >
+                <Heart size={16} className="text-gray-400" /> Wishlist
+              </Link>
+              <Link
+                to="/orders"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
+              >
+                <Package size={16} className="text-gray-400" /> My Orders
+              </Link>
+              <Link
+                to="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
+              >
+                <User size={16} className="text-gray-400" /> My Profile
+              </Link>
+              <div className="border-t border-gray-100 pt-1 mt-1">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                >
+                  <LogOut size={16} /> Sign Out
+                </button>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">{user.firstName} {user.lastName}</p>
-                <p className="text-xs text-gray-400">{user.email}</p>
-              </div>
+            </>
+          ) : (
+            <div className="space-y-2 pt-1">
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-violet-600 border border-violet-200 rounded-xl hover:bg-violet-50 transition-colors"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-violet-600 rounded-xl hover:bg-violet-700 transition-colors"
+              >
+                Register
+              </Link>
             </div>
           )}
-          <Link
-            to="/cart"
-            onClick={() => setMobileMenuOpen(false)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
-          >
-            <Heart size={16} className="text-gray-400" /> Wishlist
-          </Link>
-          <Link
-            to="/orders"
-            onClick={() => setMobileMenuOpen(false)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
-          >
-            <Package size={16} className="text-gray-400" /> My Orders
-          </Link>
-          <Link
-            to="/profile"
-            onClick={() => setMobileMenuOpen(false)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
-          >
-            <User size={16} className="text-gray-400" /> My Profile
-          </Link>
-          <div className="border-t border-gray-100 pt-1 mt-1">
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-            >
-              <LogOut size={16} /> Sign Out
-            </button>
-          </div>
         </div>
       )}
     </header>

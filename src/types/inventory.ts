@@ -1,5 +1,3 @@
-import type { PageResponse } from './product';
-
 export interface Inventory {
   productId: number;
   stockQuantity: number;

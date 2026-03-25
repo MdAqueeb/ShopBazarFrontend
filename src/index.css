@@ -46,4 +46,14 @@
   .glass {
     @apply bg-white/70 backdrop-blur-md border border-white/40;
   }
+
+  /* Slide in from right (mobile drawer) */
+  .animate-slide-in-right {
+    animation: slideInRight 0.25s ease-out;
+  }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
 }

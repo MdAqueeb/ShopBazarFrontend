@@ -8,7 +8,7 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import FormField from '../../components/ui/FormField';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { fetchUser, updateUser } from '../../store/slices/userSlice';
+import { fetchUserProfile, modifyUserProfile } from '../../store/slices/userSlice';
 
 const profileSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -30,8 +30,8 @@ const ROLE_COLORS: Record<string, string> = {
 
 export default function UserProfile({ userId }: UserProfileProps) {
   const dispatch = useAppDispatch();
-  const { profile, loading, error } = useAppSelector((state) => state.user);
-  console.log(profile, "profile")
+  const { currentUser, loading, error } = useAppSelector((state) => state.user);
+
   const {
     register,
     handleSubmit,
@@ -40,39 +40,49 @@ export default function UserProfile({ userId }: UserProfileProps) {
   } = useForm<ProfileFormData>({ resolver: zodResolver(profileSchema) });
 
   useEffect(() => {
-    dispatch(fetchUser(userId));
+    if (userId) {
+      dispatch(fetchUserProfile(userId));
+    }
   }, [dispatch, userId]);
 
   useEffect(() => {
-    if (profile) {
+    if (currentUser) {
       reset({
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        phone: profile.phone ?? '',
+        firstName: currentUser.firstName,
+        lastName: currentUser.lastName,
+        phone: currentUser.phone ?? '',
       });
     }
-  }, [profile, reset]);
+  }, [currentUser, reset]);
 
   const onSubmit = async (data: ProfileFormData) => {
-    const result = await dispatch(updateUser({ userId, data }));
-    if (updateUser.fulfilled.match(result)) {
+    const result = await dispatch(modifyUserProfile({ userId, data }));
+    if (modifyUserProfile.fulfilled.match(result)) {
       toast.success('Profile updated!');
     } else {
       toast.error(error ?? 'Failed to update profile');
     }
   };
 
-  const initials = profile
-    ? `${profile.firstName[0]}${profile.lastName[0]}`.toUpperCase()
+  const initials = currentUser
+    ? `${currentUser.firstName[0]}${currentUser.lastName[0]}`.toUpperCase()
     : '??';
 
-  const roleName = profile?.role?.roleName ?? 'CUSTOMER';
+  const roleName = (currentUser as any)?.role?.roleName ?? 'CUSTOMER';
   const roleColor = ROLE_COLORS[roleName] ?? 'bg-gray-100 text-gray-700';
 
-  if (loading && !profile) {
+  if (loading && !currentUser) {
     return (
       <div className="flex items-center justify-center py-24">
         <div className="animate-spin rounded-full h-10 w-10 border-2 border-violet-600 border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!userId) {
+    return (
+      <div className="max-w-2xl mx-auto py-16 text-center">
+        <p className="text-gray-500">Please log in to view your profile.</p>
       </div>
     );
   }
@@ -103,28 +113,28 @@ export default function UserProfile({ userId }: UserProfileProps) {
               </span>
               <span
                 className={`px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider ${
-                  profile?.status === 'ACTIVE'
+                  currentUser?.status === 'ACTIVE'
                     ? 'bg-green-100 text-green-700'
                     : 'bg-red-100 text-red-700'
                 }`}
               >
-                {profile?.status ?? '—'}
+                {currentUser?.status ?? '—'}
               </span>
             </div>
           </div>
 
           {/* Name & meta */}
           <h2 className="text-xl font-bold text-gray-900">
-            {profile ? `${profile.firstName} ${profile.lastName}` : '—'}
+            {currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : '—'}
           </h2>
 
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
             <span className="flex items-center gap-1.5 text-sm text-gray-500">
               <Mail size={13} className="text-gray-400" />
-              {profile?.email ?? '—'}
+              {currentUser?.email ?? '—'}
             </span>
 
-            {profile?.emailVerified ? (
+            {(currentUser as any)?.emailVerified ? (
               <span className="flex items-center gap-1 text-xs font-medium text-green-600">
                 <CheckCircle size={13} /> Email verified
               </span>
@@ -134,16 +144,6 @@ export default function UserProfile({ userId }: UserProfileProps) {
               </span>
             )}
           </div>
-
-          {profile?.createdAt && (
-            <p className="mt-1.5 text-xs text-gray-400">
-              Member since{' '}
-              {new Date(profile.createdAt).toLocaleDateString('en-US', {
-                month: 'long',
-                year: 'numeric',
-              })}
-            </p>
-          )}
         </div>
       </div>
 
@@ -183,7 +183,7 @@ export default function UserProfile({ userId }: UserProfileProps) {
             <Input
               id="email-ro"
               type="email"
-              value={profile?.email ?? ''}
+              value={currentUser?.email ?? ''}
               leftIcon={<Mail size={14} />}
               disabled
               readOnly
@@ -211,11 +211,11 @@ export default function UserProfile({ userId }: UserProfileProps) {
                 variant="secondary"
                 size="lg"
                 onClick={() =>
-                  profile &&
+                  currentUser &&
                   reset({
-                    firstName: profile.firstName,
-                    lastName: profile.lastName,
-                    phone: profile.phone ?? '',
+                    firstName: currentUser.firstName,
+                    lastName: currentUser.lastName,
+                    phone: currentUser.phone ?? '',
                   })
                 }
               >

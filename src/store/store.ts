@@ -15,12 +15,15 @@ import transactionReducer from './slices/transactionSlice';
 import paymentReducer from './slices/paymentSlice';
 import notificationReducer from './slices/notificationSlice';
 import reviewReducer from './slices/reviewSlice';
+import homeReducer from './slices/homeSlice';
+import wishlistReducer from './slices/wishlistSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     user: userReducer,
     products: productReducer,
+    home: homeReducer,
     search: searchReducer,
     category: categoryReducer,
     address: addressReducer,
@@ -34,6 +37,7 @@ export const store = configureStore({
     payment: paymentReducer,
     notification: notificationReducer,
     review: reviewReducer,
+    wishlist: wishlistReducer,
   },
 });
 
