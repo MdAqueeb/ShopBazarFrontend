@@ -1,0 +1,33 @@
+ShopBazar Components Skill License
+==================================
+
+This skill is provided as part of Claude Code and is intended for use in
+building e-commerce applications with React, TypeScript, Redux Toolkit, and
+Tailwind CSS.
+
+USAGE RIGHTS:
+- You may use this skill to generate code for your ShopBazar frontend project
+- You may modify and extend the patterns and guides provided
+- You may share the knowledge with your team
+
+RESTRICTIONS:
+- Do not claim ownership of the skill or its guidelines
+- Do not redistribute the skill or its contents as a standalone product
+- Do not use this skill to generate code for competing e-commerce platforms
+  intended to be resold
+
+DISCLAIMER:
+This skill provides architectural patterns and best practices based on
+e-commerce industry standards. The code examples are illustrative and should
+be adapted to your specific requirements, API contracts, and business logic.
+
+Claude is not responsible for:
+- Production issues arising from use of patterns in this skill
+- Security vulnerabilities not addressed in the guides
+- Performance issues in your specific deployment environment
+- Data loss or other damages
+
+Always conduct security audits, performance testing, and code reviews before
+deploying to production.
+
+Last updated: 2026-03-31

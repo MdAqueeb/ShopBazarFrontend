@@ -27,6 +27,9 @@ import WishlistPage from "../pages/WishlistPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import ProtectedRoute from "./ProtectedRoute";
 
+// Admin
+import adminRoutes from "../admin/routes/adminRoutes";
+
 const router = createBrowserRouter([
   // ── Auth routes (public, uses AuthLayout) ──────────────────────────────────
   {
@@ -64,6 +67,9 @@ const router = createBrowserRouter([
       },
     ],
   },
+
+  // ── Admin routes (separate layout, role-guarded) ───────────────────────────
+  adminRoutes,
 
   // ── Catch-all ──────────────────────────────────────────────────────────────
   { path: "*", element: <NotFoundPage /> },

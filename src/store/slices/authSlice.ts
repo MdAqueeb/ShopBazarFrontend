@@ -24,6 +24,11 @@ const initialState: AuthState = {
     emailVerified: true,
     status: "ACTIVE",
     createdAt: "2024-06-17T12:34:56Z",
+    role: {
+      roleId: 1,
+      roleName: "ADMIN",
+      description: "Administrator",
+    },
   },
   accessToken: storage.getAccessToken(),
   loading: false,
@@ -97,8 +102,7 @@ const authSlice = createSlice({
         storage.setAccessToken(auth.accessToken);
         storage.setRefreshToken(auth.refreshToken);
         console.log(auth);
-        state.user = auth.user; 
-
+        state.user = auth.user;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
