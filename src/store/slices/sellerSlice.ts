@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { login } from './authSlice';
 import { sellerApi } from '../../api/sellerApi';
 import type { 
   Seller, 
@@ -29,6 +30,27 @@ const initialState: SellerState = {
   loading: false,
   error: null,
 };
+
+export const fetchSellerByUserId = createAsyncThunk(
+  'seller/fetchByUserId',
+  async (_userId: number, { getState, rejectWithValue }) => {
+    try {
+      // The user mentioned getSellerByUserId endpoint is no longer available.
+      // We retrieve the seller directly from the auth state since it's now included in the login response.
+      const state = getState() as any;
+      const seller = state.auth.seller;
+      
+      if (seller && seller.sellerId) {
+        return seller;
+      }
+      
+      // If we only have user and it's a seller, but currentSeller is missing, it should have been set during login.
+      throw new Error('Seller profile not found in current session. Please try logging in again.');
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch seller');
+    }
+  }
+);
 
 export const fetchSellerProfile = createAsyncThunk(
   'seller/fetchProfile',
@@ -151,6 +173,15 @@ const sellerSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(login.fulfilled, (state, action) => {
+        if (action.payload.seller) {
+          state.currentSeller = action.payload.seller;
+        }
+      })
+      .addCase(fetchSellerByUserId.fulfilled, (state, action) => {
+        state.loading = false;
+        state.currentSeller = action.payload;
+      })
       .addCase(fetchSellerProfile.fulfilled, (state, action) => {
         state.loading = false;
         state.currentSeller = action.payload;

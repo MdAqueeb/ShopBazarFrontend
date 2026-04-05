@@ -95,7 +95,9 @@ const cartSlice = createSlice({
       })
       .addCase(addToCart.fulfilled, (state, action) => {
         state.loading = false;
-        if (state.cart) {
+        if (!state.cart) {
+          state.cart = { cartId: 0, items: [action.payload] };
+        } else {
           const existingItem = state.cart.items.find(i => i.productId === action.payload.productId);
           if (existingItem) {
             existingItem.quantity += action.payload.quantity;
@@ -124,6 +126,10 @@ const cartSlice = createSlice({
         if (state.cart) {
           state.cart.items = [];
         }
+      })
+      .addCase('auth/logout/fulfilled', (state) => {
+        state.cart = null;
+        state.error = null;
       })
       .addMatcher(
         (action) => action.type.startsWith('cart/') && action.type.endsWith('/pending'),

@@ -5,31 +5,21 @@ import type {
   LoginRequest,
   RegisterRequest,
 } from "../../types/auth.types";
+import type { Seller } from "../../types/seller";
 import type { User } from "../../types/user.types";
 import { storage } from "../../utils/storage";
 
 interface AuthState {
   user: User | null;
+  seller: Seller | null;
   accessToken: string | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: AuthState = {
-  user: {
-    userId: 343,
-    firstName: "John",
-    lastName: "Doe",
-    email: "mdafaaq33@gmail.com",
-    emailVerified: true,
-    status: "ACTIVE",
-    createdAt: "2024-06-17T12:34:56Z",
-    role: {
-      roleId: 1,
-      roleName: "ADMIN",
-      description: "Administrator",
-    },
-  },
+  user: null,
+  seller: null,
   accessToken: storage.getAccessToken(),
   loading: false,
   error: null,
@@ -101,8 +91,8 @@ const authSlice = createSlice({
         state.accessToken = auth.accessToken;
         storage.setAccessToken(auth.accessToken);
         storage.setRefreshToken(auth.refreshToken);
-        console.log(auth);
         state.user = auth.user;
+        state.seller = auth.seller ?? null;
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
@@ -121,6 +111,7 @@ const authSlice = createSlice({
       })
       .addCase(logout.fulfilled, (state) => {
         state.user = null;
+        state.seller = null;
         state.accessToken = null;
       });
   },

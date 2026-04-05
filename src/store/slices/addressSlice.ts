@@ -125,11 +125,12 @@ const addressSlice = createSlice({
       .addCase(fetchUserAddresses.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(fetchUserAddresses.fulfilled, (state, action) => {
         state.loading = false;
-        state.addresses = action.payload;
+        state.addresses = Array.isArray(action.payload) ? action.payload : [];
       })
       .addCase(fetchUserAddresses.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.addresses = [];
       })
 
       // fetchAddressById
@@ -167,7 +168,7 @@ const addressSlice = createSlice({
       .addCase(removeAddress.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(removeAddress.fulfilled, (state, action) => {
         state.loading = false;
-        state.addresses = state.addresses.filter(addr => addr.addressId !== action.payload);
+        state.addresses = Array.isArray(state.addresses) ? state.addresses.filter(addr => addr.addressId !== action.payload) : [];
         if (state.currentAddress?.addressId === action.payload) {
           state.currentAddress = null;
         }

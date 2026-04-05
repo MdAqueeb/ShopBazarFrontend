@@ -16,6 +16,7 @@ import {
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { logout } from '../../store/slices/authSlice';
 import { selectWishlistCount } from '../../store/slices/wishlistSlice';
+import { fetchCart } from '../../store/slices/cartSlice';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -25,8 +26,17 @@ export default function Navbar() {
 
   const { user, accessToken } = useAppSelector((state) => state.auth);
   const wishlistCount = useAppSelector(selectWishlistCount);
+  const cartCount = useAppSelector((state) =>
+    state.cart.cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0
+  );
   const dispatch = useAppDispatch();
   const isLoggedIn = !!accessToken;
+
+  useEffect(() => {
+    if (isLoggedIn && user?.userId) {
+      dispatch(fetchCart(user.userId));
+    }
+  }, [isLoggedIn, user?.userId, dispatch]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -110,9 +120,11 @@ export default function Navbar() {
                   className="relative p-2 text-gray-500 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-colors"
                 >
                   <ShoppingCart size={20} />
-                  <span className="absolute top-1 right-1 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
-                    0
-                  </span>
+                  {cartCount > 0 && (
+                    <span className="absolute top-1 right-1 w-4 h-4 bg-violet-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                      {cartCount > 9 ? '9+' : cartCount}
+                    </span>
+                  )}
                 </Link>
 
                 {/* User menu — desktop */}
@@ -152,6 +164,16 @@ export default function Navbar() {
                         <User size={15} className="text-gray-400" />
                         My Profile
                       </Link>
+                      { (typeof user?.role === 'string' ? user.role : user?.role?.roleName) === 'SELLER' && (
+                        <Link
+                          to="/seller"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-violet-600 font-medium hover:bg-violet-50 transition-colors"
+                        >
+                          <ShoppingBag size={15} className="text-violet-500" />
+                          Seller Portal
+                        </Link>
+                      )}
                       <Link
                         to="/orders"
                         onClick={() => setUserMenuOpen(false)}
@@ -240,7 +262,15 @@ export default function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
               >
-                <ShoppingCart size={16} className="text-gray-400" /> Cart
+                <div className="relative shrink-0">
+                  <ShoppingCart size={16} className="text-gray-400" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-violet-600 text-white text-[8px] font-bold rounded-full flex items-center justify-center leading-none">
+                      {cartCount > 9 ? '9+' : cartCount}
+                    </span>
+                  )}
+                </div>
+                Cart
               </Link>
               <Link
                 to="/wishlist"

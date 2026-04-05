@@ -30,6 +30,9 @@ import ProtectedRoute from "./ProtectedRoute";
 // Admin
 import adminRoutes from "../admin/routes/adminRoutes";
 
+// Seller
+import sellerRoutes from "../seller/routes/sellerRoutes";
+
 const router = createBrowserRouter([
   // ── Auth routes (public, uses AuthLayout) ──────────────────────────────────
   {
@@ -70,6 +73,9 @@ const router = createBrowserRouter([
 
   // ── Admin routes (separate layout, role-guarded) ───────────────────────────
   adminRoutes,
+
+  // ── Seller routes (separate layout, role-guarded) ──────────────────────────
+  sellerRoutes,
 
   // ── Catch-all ──────────────────────────────────────────────────────────────
   { path: "*", element: <NotFoundPage /> },

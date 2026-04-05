@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { MapPin, Plus, Check } from 'lucide-react';
+import { MapPin, Plus, Check, Trash2, Star, Edit2 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import FormField from '../ui/FormField';
 import { useAppDispatch } from '../../store/hooks';
-import { createNewAddress } from '../../store/slices/addressSlice';
+import { createNewAddress, removeAddress, makeDefaultAddress, modifyAddress } from '../../store/slices/addressSlice';
 import type { Address } from '../../types/address';
 
 const addressSchema = z.object({
@@ -39,6 +39,7 @@ export default function AddressSelector({
   loading,
 }: AddressSelectorProps) {
   const [showForm, setShowForm] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const dispatch = useAppDispatch();
 
   const {
@@ -49,14 +50,52 @@ export default function AddressSelector({
   } = useForm<AddressFormData>({ resolver: zodResolver(addressSchema) });
 
   const onAddAddress = async (data: AddressFormData) => {
-    const result = await dispatch(
-      createNewAddress({ userId, data: { ...data, isDefault: addresses.length === 0 } })
-    );
-    if (createNewAddress.fulfilled.match(result)) {
-      onSelect(result.payload.addressId);
-      setShowForm(false);
-      reset();
+    if (editingAddress) {
+      const result = await dispatch(
+        modifyAddress({ userId, addressId: editingAddress.addressId, data })
+      );
+      if (modifyAddress.fulfilled.match(result)) {
+        setEditingAddress(null);
+        setShowForm(false);
+        reset();
+      }
+    } else {
+      const result = await dispatch(
+        createNewAddress({ userId, data: { ...data, isDefault: addresses.length === 0 } })
+      );
+      if (createNewAddress.fulfilled.match(result)) {
+        onSelect(result.payload.addressId);
+        setShowForm(false);
+        reset();
+      }
     }
+  };
+
+  const onEditAddress = (e: React.MouseEvent, address: Address) => {
+    e.stopPropagation();
+    setEditingAddress(address);
+    setShowForm(true);
+    reset({
+      name: address.name,
+      phone: address.phone,
+      street: address.street,
+      city: address.city,
+      state: address.state,
+      postalCode: address.postalCode,
+      country: address.country,
+    });
+  };
+
+  const onRemoveAddress = (e: React.MouseEvent, addressId: number) => {
+    e.stopPropagation();
+    if (confirm('Are you sure you want to delete this address?')) {
+      dispatch(removeAddress({ userId, addressId }));
+    }
+  };
+
+  const onSetDefault = (e: React.MouseEvent, addressId: number) => {
+    e.stopPropagation();
+    dispatch(makeDefaultAddress({ userId, addressId }));
   };
 
   if (loading) {
@@ -77,21 +116,21 @@ export default function AddressSelector({
       </h3>
 
       {/* Existing addresses */}
-      {addresses.length > 0 && (
+      {addresses && Array.isArray(addresses) && addresses.length > 0 && (
         <div className="space-y-3 mb-4">
           {addresses.map((addr) => (
             <button
               key={addr.addressId}
               onClick={() => onSelect(addr.addressId)}
               className={cn(
-                'w-full text-left p-4 rounded-xl border-2 transition-all',
+                'w-full text-left p-4 rounded-xl border-2 transition-all group relative',
                 selectedAddressId === addr.addressId
                   ? 'border-violet-500 bg-violet-50'
                   : 'border-gray-200 bg-white hover:border-violet-300'
               )}
             >
               <div className="flex items-start justify-between">
-                <div>
+                <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-semibold text-gray-900">{addr.name}</p>
                     {addr.isDefault && (
@@ -105,11 +144,38 @@ export default function AddressSelector({
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">{addr.phone}</p>
                 </div>
-                {selectedAddressId === addr.addressId && (
-                  <div className="w-6 h-6 bg-violet-600 rounded-full flex items-center justify-center shrink-0">
-                    <Check size={14} className="text-white" />
+                <div className="flex flex-col items-end gap-2">
+                  {selectedAddressId === addr.addressId && (
+                    <div className="w-6 h-6 bg-violet-600 rounded-full flex items-center justify-center shrink-0">
+                      <Check size={14} className="text-white" />
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {!addr.isDefault && (
+                      <button
+                        onClick={(e) => onSetDefault(e, addr.addressId)}
+                        className="p-1.5 text-gray-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-colors"
+                        title="Set as default"
+                      >
+                        <Star size={14} />
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => onEditAddress(e, addr)}
+                      className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="Edit address"
+                    >
+                      <Edit2 size={14} />
+                    </button>
+                    <button
+                      onClick={(e) => onRemoveAddress(e, addr.addressId)}
+                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete address"
+                    >
+                      <Trash2 size={14} />
+                    </button>
                   </div>
-                )}
+                </div>
               </div>
             </button>
           ))}
@@ -127,7 +193,9 @@ export default function AddressSelector({
         </button>
       ) : (
         <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
-          <h4 className="text-sm font-semibold text-gray-900 mb-4">New Address</h4>
+          <h4 className="text-sm font-semibold text-gray-900 mb-4">
+            {editingAddress ? 'Edit Address' : 'New Address'}
+          </h4>
           <form onSubmit={handleSubmit(onAddAddress)} className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <FormField label="Full Name" htmlFor="addr-name" error={errors.name?.message}>
@@ -168,7 +236,7 @@ export default function AddressSelector({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => { setShowForm(false); reset(); }}
+                onClick={() => { setShowForm(false); setEditingAddress(null); reset(); }}
               >
                 Cancel
               </Button>

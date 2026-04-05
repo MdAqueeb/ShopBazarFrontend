@@ -10,6 +10,7 @@ import FormField from "../../components/ui/FormField";
 import Input from "../../components/ui/Input";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { login } from "../../store/slices/authSlice";
+import { fetchCart } from "../../store/slices/cartSlice";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -41,8 +42,14 @@ export default function LoginForm({
   const onSubmit = async (data: LoginFormData) => {
     const result = await dispatch(login(data));
     if (login.fulfilled.match(result)) {
-      navigate("/products");
       toast.success("Welcome back!");
+      const roleObj = result.payload.user?.role;
+      const role = typeof roleObj === 'string' ? roleObj : roleObj?.roleName;
+      const userId = result.payload.user?.userId;
+      if (userId) dispatch(fetchCart(userId));
+      if (role === "ADMIN") navigate("/admin");
+      else if (role === "SELLER") navigate("/seller");
+      else navigate("/");
     } else {
       toast.error((result.payload as string) || "Invalid email or password");
     }

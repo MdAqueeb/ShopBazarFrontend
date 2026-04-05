@@ -48,7 +48,7 @@ export const fetchOrderById = createAsyncThunk(
   async (orderId: number, { rejectWithValue }) => {
     try {
       const response = await orderApi.getOrder(orderId);
-      if (!response.success) throw new Error(response.message);
+      if (response.success === false) throw new Error(response.message);
       return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || error.message || 'Failed to fetch order');

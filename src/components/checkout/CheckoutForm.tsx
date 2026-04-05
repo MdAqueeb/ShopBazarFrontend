@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CreditCard, Banknote, Check } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import Button from '../ui/Button';
@@ -38,20 +38,31 @@ export default function CheckoutForm({
   placingOrder,
 }: CheckoutFormProps) {
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
-    addresses.find((a) => a.isDefault)?.addressId ?? null
+    addresses && Array.isArray(addresses) ? addresses.find((a) => a.isDefault)?.addressId ?? null : null
   );
+
+  useEffect(() => {
+    if (!selectedAddressId && addresses && Array.isArray(addresses) && addresses.length > 0) {
+      const defaultAddr = addresses.find((a) => a.isDefault);
+      if (defaultAddr) {
+        setSelectedAddressId(defaultAddr.addressId);
+      } else if (addresses[0]) {
+        setSelectedAddressId(addresses[0].addressId);
+      }
+    }
+  }, [addresses, selectedAddressId]);
+
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD');
 
   const canSubmit = selectedAddressId !== null && !placingOrder;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePlaceOrderClick = () => {
     if (!selectedAddressId) return;
     onPlaceOrder(selectedAddressId, paymentMethod);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+    <div className="space-y-8">
       {/* Address Section */}
       <AddressSelector
         addresses={addresses}
@@ -106,7 +117,8 @@ export default function CheckoutForm({
 
       {/* Submit */}
       <Button
-        type="submit"
+        onClick={handlePlaceOrderClick}
+        type="button"
         size="lg"
         className="w-full"
         disabled={!canSubmit}
@@ -120,6 +132,6 @@ export default function CheckoutForm({
           Please select or add a delivery address to continue
         </p>
       )}
-    </form>
+    </div>
   );
 }

@@ -1,5 +1,9 @@
 export interface Inventory {
-  productId: number;
+  inventoryId: number;
+  product: {
+    productId: number;
+    name: string;
+  };
   stockQuantity: number;
   reservedQuantity: number;
 }

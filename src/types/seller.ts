@@ -2,7 +2,6 @@ export interface Seller {
   sellerId: number;
   storeName: string;
   status: string;
-  phone: string;
 }
 
 export interface SellerAnalytics {

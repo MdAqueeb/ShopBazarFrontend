@@ -50,5 +50,7 @@ export const sellerApi = {
   deactivateSeller: async (sellerId: number) => {
     const res = await axiosInstance.put<ApiResponse<Seller>>(`${API}/${sellerId}/deactivate`);
     return res.data;
-  }
+  },
+
+  // Note: getSellerByUserId endpoint removed as per user request. Seller data now included in login response.
 };

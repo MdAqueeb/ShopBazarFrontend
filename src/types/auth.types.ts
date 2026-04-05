@@ -1,3 +1,4 @@
+import type { Seller } from "./seller";
 import type { User } from "./user.types";
 
 export interface LoginRequest {
@@ -17,7 +18,9 @@ export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
   tokenType: string;
+  expiresIn?: number;
   user: User;
+  seller?: Seller;
 }
 
 export interface RefreshTokenRequest {
